@@ -50,7 +50,8 @@ def get_photometric_derot(input_map,rot_angle,bin_scale):
     Rotated_map.save(f'Rotated_Map_{rot_angle}deg.fits',overwrite=True)
     return Rotated_map,err
 
-input_map = sunpy.map.Map("/Analysis/Research_Projects/SUIT_work/derotation/data/raw/SUT_T24_0956_000465_Lev1.0_2024-07-10T13.05.51.135_0983NB03.fits")
+input_file="/Analysis/Research_Projects/SUIT_work/derotation/data/raw/SUT_T24_0956_000465_Lev1.0_2024-07-10T13.05.51.135_0983NB03.fits"
+input_map = sunpy.map.Map(input_file)
 bin_scale=4
 angle=7 # anticlock direction
 Rotated_map,err=get_photometric_derot(input_map,angle,bin_scale)
