@@ -63,10 +63,11 @@ def get_photometric_derot(input_map,rot_angle,bin_scale):
 if __name__=='__main__':
     input_file="/path/to/do/fits_image.fits"
     input_map = sunpy.map.Map(input_file)
+    rot_angle=input_map.fits_header['CROTA2'] #Angle to be rotated as per header 
     bin_scale=4 #each pixel will be made into 4 subpixels before rotation
-    angle=7     #anticlock direction
+    angle=7     #angle to be rotated in anticlockwise direction, custom or equate the rot_angle
     Rotated_map,err=get_photometric_derot(input_map,angle,bin_scale)
     print(f"Error in rotation: {err}") #% error
-    Rotated_map.save(f'Rotated_Map_{angle}deg.fits',overwrite=True)
+    Rotated_map.save(f'Rotated_Map_{angle}deg.fits',overwrite=True) #output image name
 
 
