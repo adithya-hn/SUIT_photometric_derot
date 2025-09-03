@@ -1,11 +1,13 @@
 
 '''
-Created on: 
+Created on: 12-08-2024
 @author: adithya-hn
 Aim: Derotate the SUIT/Aditya-L1 images
 Method: We make a subpixel binning for each pixel and then apply the rotation, and then bin by the same amount 
 to convert them back to their original size, this process reduces the photometric loss during the rotation.
 
+Update History
+ - 03-09-24: Rotation angle value in header (CROTA2) is corrected.
 
 '''
 
@@ -16,7 +18,7 @@ import numpy as np
 
 
 
-def get_rotMap(image_map,rot_angle): #apply rotation 
+def get_rotMap(image_map,rot_angle): #apply rotation for subpixel map
     old_header=image_map.fits_header
     o_sum=np.sum(np.array(image_map.data,dtype='int64'))
     rot_map=image_map.rotate(angle=rot_angle * u.deg)
@@ -57,7 +59,7 @@ def get_photometric_derot(input_map,rot_angle,bin_scale):
     RsubPix_map_header['CRPIX1']=Rotated_subPix_map.fits_header['CRPIX1']/bin_scale
     RsubPix_map_header['CRPIX2']=Rotated_subPix_map.fits_header['CRPIX2']/bin_scale
 
-    if RsubPix_map_header['CROTA2']: # if CROTA2 exist in header
+    if RsubPix_map_header['CROTA2']: # if CROTA2 exist in header it will be updated.
        print('initial map rotation angle : ', RsubPix_map_header['CROTA2'])
        print('Updated angle will be: ', RsubPix_map_header['CROTA2']-rot_angle)
        RsubPix_map_header['CROTA2']=RsubPix_map_header['CROTA2']-rot_angle
