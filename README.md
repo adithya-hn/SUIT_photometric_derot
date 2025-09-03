@@ -17,10 +17,10 @@ The rotation is performed about the **full-disc centre** and minimizes photometr
 
 
 ## Usage
-- Open the ph_rot.py file and update these variables
-input_file = "/path/to/suit_image.fits"
-bin_scale = 5   # subdivide each pixel into 5×5 sub-pixels
-angle = 7       # degrees, anticlockwise; can also use map_rot_angle
+Open the ph_rot.py file and update these variables
+- input_file = "/path/to/suit_image.fits"
+- bin_scale = 5   # subdivide each pixel into 5×5 sub-pixels
+- angle = 7       # degrees, anticlockwise; can also use map_rot_angle
 
 
 ```bash
