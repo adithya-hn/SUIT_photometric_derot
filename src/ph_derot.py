@@ -15,8 +15,7 @@ import sunpy.map
 import matplotlib.pyplot as plt
 import astropy.units as u
 import numpy as np
-
-
+import os, glob
 
 def get_rotMap(image_map,rot_angle): #apply rotation for subpixel map
     old_header=image_map.fits_header
@@ -28,7 +27,6 @@ def get_rotMap(image_map,rot_angle): #apply rotation for subpixel map
     old_header['CRPIX1']=rotMap_header['CRPIX1']
     old_header['CRPIX2']=rotMap_header['CRPIX2']
     err=(o_sum-r_sum)*100/o_sum
-    #print(o_sum,r_sum,err)
     Rotated_map=sunpy.map.Map(rot_map.data,old_header)
     return Rotated_map,err
 
@@ -47,7 +45,6 @@ def bin_back(matrix,scale): #bin back or create a super pixel to have the same s
        new_matrix[i, j]=np.sum(matrix[i * scale:(i + 1) * scale, j * scale:(j + 1) * scale])
    return new_matrix
 
-
 def get_photometric_derot(input_map,rot_angle,bin_scale):
     binUpImg=create_subpixels(input_map.data,bin_scale)
     refmap_header=input_map.fits_header
@@ -63,24 +60,21 @@ def get_photometric_derot(input_map,rot_angle,bin_scale):
        print('initial map rotation angle : ', RsubPix_map_header['CROTA2'])
        print('Updated angle will be: ', RsubPix_map_header['CROTA2']-rot_angle)
        RsubPix_map_header['CROTA2']=RsubPix_map_header['CROTA2']-rot_angle
-      
     Rotated_map=sunpy.map.Map(bin_back(Rotated_subPix_map.data,bin_scale),RsubPix_map_header)
-
-    #Rotated_map.save(f'Rotated_Map_{rot_angle}deg.fits',overwrite=True)
     return Rotated_map,err
 
 if __name__=='__main__':
-    input_file="/Analysis/Research_Projects/Flare_studies/SUIT_Flares/Case2_June02/data/raw/SUT_T24_0785_000397_Lev1.0_2024-06-02T02.30.52.740_0973NB03.fits"
+    SAVE= True
+    project_path= os.path.abspath("..")
+    input_file=glob.glob(os.path.join(project_path, "data/raw/*"))[0]
     input_map = sunpy.map.Map(input_file)
     if input_map.meta.get('CROTA2'):
        map_rot_angle=input_map.meta.get('CROTA2')
        print('Map rotation angle, as per header key CROTA2:',map_rot_angle )
-
     bin_scale=5 #each pixel will be made into 5 subpixels before rotation
     angle=7     #in degrees, anticlock direction, custom angle or header value (map_rot_angle) can be equated here
-
-    Rotated_map,err=get_photometric_derot(input_map,angle,bin_scale)
+    Rotated_map,err= get_photometric_derot(input_map,angle,bin_scale)
     print(f"%Error in total count after rotation: {err}") #% error
-    Rotated_map.save(f'Rotated_Map_{angle}deg.fits',overwrite=True) # to save the rotated map
-
-
+    if SAVE:
+        save_name=os.path.join(project_path, "products", os.path.basename(input_file))
+        Rotated_map.save(save_name,overwrite=True) # to save the rotated map
