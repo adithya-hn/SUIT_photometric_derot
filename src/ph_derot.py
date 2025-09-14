@@ -1,4 +1,3 @@
-
 '''
 Created on: 12-08-2024
 @author: adithya-hn
@@ -72,9 +71,12 @@ if __name__=='__main__':
        map_rot_angle=input_map.meta.get('CROTA2')
        print('Map rotation angle, as per header key CROTA2:',map_rot_angle )
     bin_scale=5 #each pixel will be made into 5 subpixels before rotation
-    angle=7     #in degrees, anticlock direction, custom angle or header value (map_rot_angle) can be equated here
-    Rotated_map,err= get_photometric_derot(input_map,angle,bin_scale)
-    print(f"%Error in total count after rotation: {err}") #% error
-    if SAVE:
-        save_name=os.path.join(project_path, "products", os.path.basename(input_file))
-        Rotated_map.save(save_name,overwrite=True) # to save the rotated map
+    angles= np.arange(0,90,5)
+    #angle=15     #in degrees, anticlock direction, custom angle or header value (map_rot_angle) can be equated here
+    for angle in angles:
+        Rotated_map,err= get_photometric_derot(input_map,angle,bin_scale)
+        print(f"%Error in total count after rotation: {err}") #% error
+        if SAVE:
+            save_name=os.path.join(project_path, "products", f"{angle}_{os.path.basename(input_file)}")
+            print(save_name)
+            Rotated_map.save(save_name,overwrite=True) # to save the rotated map
