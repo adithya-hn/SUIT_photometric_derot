@@ -15,19 +15,16 @@ import matplotlib.pyplot as plt
 import astropy.units as u
 import numpy as np
 import os, glob
+from concurrent.futures import ProcessPoolExecutor
 
 def get_rotMap(image_map,rot_angle): #apply rotation for subpixel map
     old_header=image_map.fits_header
-    o_sum=np.sum(np.array(image_map.data,dtype='int64'))
     rot_map=image_map.rotate(angle=rot_angle * u.deg)
     rotMap_header=rot_map.fits_header
-    r_sum=np.sum(np.asarray(rot_map.data,dtype='int64'))
-    
     old_header['CRPIX1']=rotMap_header['CRPIX1']
     old_header['CRPIX2']=rotMap_header['CRPIX2']
-    err=(o_sum-r_sum)*100/o_sum
     Rotated_map=sunpy.map.Map(rot_map.data,old_header)
-    return Rotated_map,err
+    return Rotated_map
 
 def create_subpixels(matrix, scale):
   new_matrix = np.zeros((matrix.shape[0] * scale, matrix.shape[1] * scale))
@@ -50,33 +47,33 @@ def get_photometric_derot(input_map,rot_angle,bin_scale):
     refmap_header['CRPIX1']=input_map.fits_header['CRPIX1']*bin_scale
     refmap_header['CRPIX2']=input_map.fits_header['CRPIX2']*bin_scale
     subPixMap=sunpy.map.Map(binUpImg,refmap_header) 
-    Rotated_subPix_map,err=get_rotMap(subPixMap,rot_angle)
+    Rotated_subPix_map=get_rotMap(subPixMap,rot_angle)
     RsubPix_map_header=Rotated_subPix_map.fits_header
     RsubPix_map_header['CRPIX1']=Rotated_subPix_map.fits_header['CRPIX1']/bin_scale
     RsubPix_map_header['CRPIX2']=Rotated_subPix_map.fits_header['CRPIX2']/bin_scale
 
     if RsubPix_map_header['CROTA2']: # if CROTA2 exist in header it will be updated.
-       print('initial map rotation angle : ', RsubPix_map_header['CROTA2'])
-       print('Updated angle will be: ', RsubPix_map_header['CROTA2']-rot_angle)
        RsubPix_map_header['CROTA2']=RsubPix_map_header['CROTA2']-rot_angle
     Rotated_map=sunpy.map.Map(bin_back(Rotated_subPix_map.data,bin_scale),RsubPix_map_header)
-    return Rotated_map,err
+    return Rotated_map
+
+def run(input_file): 
+    input_map = sunpy.map.Map(input_file)
+    if USE_CUSTOM_ANGLE: # anticlockwise rotation angle. CROTA2 can be used interchangably.
+        ANGLE=15 
+    else:
+        ANGLE= input_map.meta.get('CROTA2')
+    bin_scale=5 #each pixel will be made into 5 subpixels before rotation
+    Rotated_map= get_photometric_derot(input_map,ANGLE,bin_scale)
+    if SAVE:
+        save_name=os.path.join(project_path, "data/processed", f"{os.path.basename(input_file)}")
+        print(save_name)
+        Rotated_map.save(save_name,overwrite=True) # to save the rotated map
 
 if __name__=='__main__':
-    SAVE= True
+    SAVE= True #save images toggle
+    USE_CUSTOM_ANGLE= False
     project_path= os.path.abspath("..")
-    input_file=glob.glob(os.path.join(project_path, "data/raw/*"))[0]
-    input_map = sunpy.map.Map(input_file)
-    if input_map.meta.get('CROTA2'):
-       map_rot_angle=input_map.meta.get('CROTA2')
-       print('Map rotation angle, as per header key CROTA2:',map_rot_angle )
-    bin_scale=5 #each pixel will be made into 5 subpixels before rotation
-    angles= np.arange(5,95,5)
-    #angle=15     #in degrees, anticlock direction, custom angle or header value (map_rot_angle) can be equated here
-    for angle in angles:
-        Rotated_map,err= get_photometric_derot(input_map,angle,bin_scale)
-        print(f"%Error in total count after rotation: {err}") #% error
-        if SAVE:
-            save_name=os.path.join(project_path, "data/processed", f"{angle}_{os.path.basename(input_file)}")
-            print(save_name)
-            Rotated_map.save(save_name,overwrite=True) # to save the rotated map
+    input_files=sorted(glob.glob(os.path.join(project_path, "data/raw/*")))
+    with ProcessPoolExecutor() as executor:
+        executor.map(run, input_files)
