@@ -7,7 +7,7 @@ to convert them back to their original size, this process reduces the photometri
 
 Update History
  - 03-09-24: Rotation angle value in header (CROTA2) is corrected.
-
+ - 16-09-25: Multiprocessing added.
 '''
 
 import sunpy.map
@@ -74,6 +74,6 @@ if __name__=='__main__':
     SAVE= True #save images toggle
     USE_CUSTOM_ANGLE= False
     project_path= os.path.abspath("..")
-    input_files=sorted(glob.glob(os.path.join(project_path, "data/raw/*")))
+    input_files=sorted(glob.glob(os.path.join(project_path, "data/raw/*.fits")))
     with ProcessPoolExecutor() as executor:
         executor.map(run, input_files)
