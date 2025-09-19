@@ -1,0 +1,6 @@
+$ cat .gitignore
+data/*/*.fits
+products/*.fits
+!data/raw/_placeholder
+!data/processed/_placeholder
+!products/_placeholder

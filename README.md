@@ -1,3 +1,5 @@
+![Logo](https://suit.iucaa.in/sites/default/files/top_banner_compressed_2_1.png)
+
 # SUIT Photometric Derotation
 
 This repository provides a **flux-conserving rotation routine** for Solar Ultraviolet Imaging Telescope (SUIT) images.  
@@ -14,10 +16,12 @@ The rotation is performed about the **full-disc centre** and minimizes photometr
 - Saves the rotated map as a new FITS file with updated WCS.
 ---
 ## Usage
-Open the ph_rot.py file and update these variables
-- input_file = "/path/to/suit_image.fits"
-- bin_scale = n   # subdivide each pixel into n×n sub-pixels
-- angle = d       # degrees, anticlockwise; can also use map_rot_angle
+- Place files to be processed in `./data/raw`
+- Get processed data in `./data/processed`
+- Any photometric test results or plots will be saved in `./products`
+
+- `bin_scale = n`   # subdivide each pixel into n×n sub-pixels
+- `ANGLE= d`       # degrees, anticlockwise; can also use map_rot_angle
 ---
 
 ## How It Works
